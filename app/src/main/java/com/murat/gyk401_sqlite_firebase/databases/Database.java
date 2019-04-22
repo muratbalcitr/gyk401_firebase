@@ -21,7 +21,9 @@ public class Database extends SQLiteOpenHelper {
     private String PATH="path";
     private static final int DB_VERSION = 1;
 
-    private String query = "CREATE TABLE " + TABLE_NAME + " (" + KITAP_ADI + " TEXT," + " " + YAZAR_ADI + " TEXT, " + " " + ISBN + " TEXT, " + " " + BASIM_TARIHI + " TEXT,"+" "+OZET +" TEXT,"+" "+PATH+" TEXT)";
+    private String query = "CREATE TABLE " + TABLE_NAME + " (" + KITAP_ADI + " TEXT," + " " +
+            "" + YAZAR_ADI + " TEXT, " + " " + ISBN + " TEXT, " + " " + BASIM_TARIHI + " TEXT,"+" " +
+            ""+OZET +" TEXT,"+" "+PATH+" TEXT)";
 
 
     public Database(Context context) {
@@ -75,8 +77,10 @@ public class Database extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS "+TABLE_NAME);
-        onCreate(db);
+       if (newVersion>oldVersion) {
+           db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+           onCreate(db);
+       }
     }
 
 

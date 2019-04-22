@@ -22,7 +22,9 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.murat.gyk401_sqlite_firebase.R;
-import com.murat.gyk401_sqlite_firebase.activity.MainActivity;
+import com.murat.gyk401_sqlite_firebase.activity.KitapActivity;
+
+import java.util.Objects;
 
 public class Login_Activity extends AppCompatActivity implements View.OnClickListener {
 
@@ -77,6 +79,7 @@ public class Login_Activity extends AppCompatActivity implements View.OnClickLis
         switch (v.getId()) {
             case R.id.btnLogin:
                 login();
+                break;
         }
     }
 
@@ -90,8 +93,8 @@ public class Login_Activity extends AppCompatActivity implements View.OnClickLis
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if (task.isSuccessful()) {
-                            if (verifyEmal()){
-                                startActivity(new Intent(Login_Activity.this, MainActivity.class));
+                            if (!verifyEmal()){
+                                startActivity(new Intent(Login_Activity.this, KitapActivity.class));
                             }
                     } else {
                         Snackbar.make(cnsMain,"Kullanıcı doğrulanmamıştır lütfen  maili kontrol ediniz",1000).show();
@@ -106,7 +109,7 @@ public class Login_Activity extends AppCompatActivity implements View.OnClickLis
     private boolean verifyEmal() {
 
         final FirebaseUser firebaseUser = mFirebaseAuth.getCurrentUser();
-        if (!firebaseUser.isEmailVerified()) {
+        if (!Objects.requireNonNull(firebaseUser).isEmailVerified()) {
             firebaseUser.sendEmailVerification()
                     .addOnCompleteListener(this, new OnCompleteListener<Void>() {
                         @Override

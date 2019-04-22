@@ -1,6 +1,8 @@
 package com.murat.gyk401_sqlite_firebase.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -14,17 +16,40 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.murat.gyk401_sqlite_firebase.R;
 import com.murat.gyk401_sqlite_firebase.fragment.AddBook;
+import com.murat.gyk401_sqlite_firebase.login.Login_Activity;
 
-public class MainActivity extends AppCompatActivity
+public class KitapActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+    FirebaseUser firebaseUser;
+    FirebaseAuth mFirebaseAuth;
+    FirebaseAuth.AuthStateListener authStateListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = mFirebaseAuth.getCurrentUser();
+
+        authStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                 if (firebaseUser == null)
+                    startActivity(new Intent(KitapActivity.this, Login_Activity.class));
+                finish();
+            }
+        };
+
+
+        UserControl();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_main);
         setSupportActionBar(toolbar);
 
@@ -64,18 +89,14 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
+       int id = item.getItemId();
+       if (id==R.id.action_signOut){
+           mFirebaseAuth.signOut();
+           return true;
+       }
         return super.onOptionsItemSelected(item);
     }
 
@@ -88,8 +109,8 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
-        fragment = new AddBook();
-        loadFragment(fragment);
+            fragment = new AddBook();
+            loadFragment(fragment);
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {
@@ -113,6 +134,52 @@ public class MainActivity extends AppCompatActivity
         transaction.replace(R.id.frame_container, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
+    }
+
+    private void UserControl() {
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            boolean emailVerified = firebaseUser.isEmailVerified();
+            if (emailVerified) {
+                Toast.makeText(this, "hoşgeldiniz", Toast.LENGTH_SHORT).show();
+            } else {
+                VerifySendEmail();
+            }
+        } else {
+            startActivity(new Intent(KitapActivity.this, Login_Activity.class));
+        }
+    }
+
+    private void VerifySendEmail() {
+        final FirebaseUser firebaseUser = mFirebaseAuth.getCurrentUser();
+        if (!firebaseUser.isEmailVerified()) {
+            firebaseUser.sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(KitapActivity.this, "doğrulama maili gönderildi. Lütfen"
+                                + firebaseUser.getEmail() + "isimli maili kontrol ediniz", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(KitapActivity.this, "işlem başarısız", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mFirebaseAuth.addAuthStateListener(authStateListener);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (authStateListener != null) {
+            mFirebaseAuth.removeAuthStateListener(authStateListener);
+        }
     }
 
 }

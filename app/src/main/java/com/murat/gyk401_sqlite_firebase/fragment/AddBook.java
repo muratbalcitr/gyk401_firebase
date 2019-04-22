@@ -53,7 +53,7 @@ public class AddBook extends Fragment implements View.OnClickListener {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         database = new Database(getContext());
-        db = Objects.requireNonNull(getActivity()).openOrCreateDatabase(database.TABLE_NAME,
+        db =  Objects.requireNonNull(getActivity()).openOrCreateDatabase(database.TABLE_NAME,
                 MODE_PRIVATE,
                 null);
     }
@@ -73,6 +73,8 @@ public class AddBook extends Fragment implements View.OnClickListener {
         imgSelect.setOnClickListener(this);
         btnEkle.setOnClickListener(this);
         return view;
+
+
     }
 
     private void addTableContent() {
